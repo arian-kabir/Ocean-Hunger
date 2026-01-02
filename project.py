@@ -136,7 +136,7 @@ def keyboardListener(key, x, y):
         health=100
         exp=20
         pov=False
-        camera_pos=(0,700,700)
+        camera_pos=(0,300,100)
         
 def specialKeyListener(key, x, y):
     """
@@ -150,7 +150,7 @@ def specialKeyListener(key, x, y):
             z+=10
     # Move camera down (DOWN arrow key)
     if key == GLUT_KEY_DOWN:
-        if z-10>0:
+        if z-10>50:
             z-=10
     # moving camera left (LEFT arrow key)
     if key == GLUT_KEY_LEFT:
@@ -216,9 +216,13 @@ def setupCamera():
     x2 = x1 + 100 * math.sin(angle)
     y2 = y1 - 100 * math.cos(angle)
     z2 = z1 + 140
+    #editing camera position based on player
+    xc= x1 - 100 * math.sin(angle)
+    yc = y1 + 100 * math.cos(angle)
+    
     # Position the camera and set its orientation 
     if pov==False:
-        gluLookAt(x, y, z,  # Camera position
+        gluLookAt(xc, yc, z,  # Camera position
                 x1,y1,z1,  # Look-at target
                 0, 0, 1)  # Up vector (z-axis)
     else:
@@ -272,19 +276,23 @@ def idle():
             if var>750:
                 wave=False
         xp,yp,zp=player_pos
-        if abs(var-xp)<10 and wave_colli==False:
-            wave_colli=True
-            if wave_from=="l":
-                xp-=50
-            elif wave_from=="r":
-                xp+=50
-        elif abs(var-yp)<10 and wave_colli==False:
-            wave_colli=True
-            if wave_from=="t":
-                yp+=50
-            elif wave_from=="b":
-                yp-=50
-        player_pos=(xp,yp,zp)
+        if wave_colli==False:
+            if wave_from=="l" or wave_from== "r":
+                if abs(var-xp) <20:
+                    wave_colli=True
+                    if wave_from=="l":
+                        xp-=50
+                    else:
+                        xp+=50
+            elif wave_from=="t" or wave_from=="b":
+                if abs(var-yp)< 20:
+                    wave_colli=True
+                    if wave_from=="t":
+                        yp +=50
+                    else:
+                        yp -=50
+
+        player_pos=(xp,yp, zp)
     #bait caught=====================================================
         # bait_caught=True
         # caught_counter=0
@@ -497,4 +505,5 @@ if __name__ == "__main__":
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 125)
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 0)
     # glEnd()
+
 
