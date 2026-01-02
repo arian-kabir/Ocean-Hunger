@@ -4,7 +4,7 @@ from OpenGL.GLU import *
 import random
 import math
 # Camera-related variables
-camera_pos = (0,700,700)
+camera_pos = (0,300,100)
 player_pos=(0,0,0)
 player_angle=0
 pov=False
@@ -146,7 +146,7 @@ def specialKeyListener(key, x, y):
     x, y, z = camera_pos
     # Move camera up (UP arrow key)
     if key == GLUT_KEY_UP:
-        if z+10<900:
+        if z+10<400:
             z+=10
     # Move camera down (DOWN arrow key)
     if key == GLUT_KEY_DOWN:
@@ -154,24 +154,24 @@ def specialKeyListener(key, x, y):
             z-=10
     # moving camera left (LEFT arrow key)
     if key == GLUT_KEY_LEFT:
-        if x<GRID_LENGTH*(8) and y==700:
+        if x<300 and y==300:
             x+=20
-        elif x==GRID_LENGTH*(8) and y>-700:
+        elif x==300 and y>-300:
             y-=20
-        elif x>-GRID_LENGTH*(8) and y==-700:
+        elif x>-300 and y==-300:
             x-=20
-        elif x==-GRID_LENGTH*(8) and y<700:
+        elif x==-300 and y<300:
             y+=20
 
     # moving camera right (RIGHT arrow key)
     if key == GLUT_KEY_RIGHT:
-        if x>-GRID_LENGTH*(8) and y==700:
+        if x>-300 and y==300:
             x-=20
-        elif x==-GRID_LENGTH*(8) and y>-700:
+        elif x==-300 and y>-300:
             y-=20
-        elif x<GRID_LENGTH*(8) and y==-700:
+        elif x<300 and y==-300:
             x+=20
-        elif x==GRID_LENGTH*(8) and y<700:
+        elif x==300 and y<300:
             y+=20
     camera_pos = (x, y, z)
 
@@ -497,3 +497,4 @@ if __name__ == "__main__":
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 125)
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 0)
     # glEnd()
+
