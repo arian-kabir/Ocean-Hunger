@@ -22,6 +22,26 @@ bait_caught=False
 caught_counter=0
 escape_chance=0
 escape_check=False
+
+
+min_of_x = GRID_LENGTH * (-6)  
+max_of_x = GRID_LENGTH * (7)   
+min_of_y = GRID_LENGTH * (-7)  
+max_of_y = GRID_LENGTH * (6)    
+stones = []        
+plants = []        
+small_fishes = []
+big_fishes = []    
+plant_wave_offset = 0.0  
+hunger_counter = 0         
+HUNGER_LIMIT = 1200         
+MOVE_SLOW_FACTOR = 0.35     
+slow_mode = False           
+blink_on = False          
+blink_counter = 0       
+BLINK_PERIOD_FRAMES = 120 
+
+
 def draw_text(x, y, text, font=GLUT_BITMAP_HELVETICA_18):
     glColor3f(1,1,1)
     glMatrixMode(GL_PROJECTION)
@@ -83,7 +103,148 @@ def draw_player(x,y,z, size=1):
         gluCylinder(gluNewQuadric(), 0, 4, 14, 10, 10)  
         glPopMatrix()
     glPopMatrix()
+
+def draw_borders(height=125):  
+    xL = min_of_x
+    xR = max_of_x
+    yB = min_of_y
+    yT = max_of_y
+    glBegin(GL_QUADS)
     
+    # left wall
+    glColor3f(0, 0, 1)
+    glVertex3f(xL, yB, 0)
+    glVertex3f(xL, yB, height)
+    glVertex3f(xL, yT, height)
+    glVertex3f(xL, yT, 0)
+
+    # right wall
+    glColor3f(0, 1, 0)
+    glVertex3f(xR, yB, 0)
+    glVertex3f(xR, yB, height)
+    glVertex3f(xR, yT, height)
+    glVertex3f(xR, yT, 0)
+
+    # top wall
+    glColor3f(0.0, 0.8, 0.9)
+    glVertex3f(xL, yT, 0)
+    glVertex3f(xL, yT, height)
+    glVertex3f(xR, yT, height)
+    glVertex3f(xR, yT, 0)
+
+    # bottom wall
+    glColor3f(0.1, 0.3, 0.9)
+    glVertex3f(xL, yB, 0)
+    glVertex3f(xL, yB, height)
+    glVertex3f(xR, yB, height)
+    glVertex3f(xR, yB, 0)
+
+    glEnd()
+
+def draw_fish_model(size=1.0, color=(1, 0.3, 0.0)):  
+    glPushMatrix()
+
+    glPushMatrix()
+    glScalef(1.0*size, 3.0*size, 2.0*size)
+    glTranslatef(0, 0, 20)
+    glColor3f(color[0], color[1], color[2])
+    gluSphere(gluNewQuadric(), 15, 10, 10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glScalef(0.2*size, 1.0*size, 1.0*size)
+    glTranslatef(0, 80, 0)
+    glRotatef(90, 1, 0, 0)
+    glRotatef(-45, 1, 0, 0)
+    glColor3f(0.8, 0.8, 1.0)
+    gluCylinder(gluNewQuadric(), 4, 16, 50, 10, 10)
+    glTranslatef(0, 50, 50)
+    glRotatef(90, 1, 0, 0)
+    gluCylinder(gluNewQuadric(), 4, 16, 50, 10, 10)
+    glPopMatrix()
+
+    glPushMatrix()
+    glRotatef(150, 1, 0, 0)
+    glTranslatef(0, 30, -80)
+    gluCylinder(gluNewQuadric(), 0, 4, 18, 10, 10)
+    glRotatef(-100, 1, 0, 0)
+    glTranslatef(0, -60, -50)
+    gluCylinder(gluNewQuadric(), 0, 4, 14, 10, 10)
+    glPopMatrix()
+
+    glPopMatrix()
+
+def draw_npc_fish(x,y,z,angle,size=1.0,color=(0.9,0.9,0.2)):  
+    glPushMatrix()
+    glTranslatef(x,y,z)
+    glRotatef(angle, 0, 0, 1)
+    draw_fish_model(size=size, color=color)
+    glPopMatrix()
+
+def draw_small_fish(x,y,z,angle): 
+    draw_npc_fish(x, y, z, angle, size=0.55, color=(0.2, 1.0, 0.6))
+
+def draw_big_fish(x,y,z,angle):
+    draw_npc_fish(x, y, z, angle, size=1.25, body_rgb=(0.7, 0.2, 1.0)) 
+
+def draw_stone(x,y,z=0,scale=1.0,sink=0.35):  
+    glPushMatrix()
+    glTranslatef(x, y, z)
+    glScalef(scale, scale, scale)
+
+    r = 18
+    bury = max(0.0, min(sink, 0.95))*r 
+    glTranslatef(0, 0, r-bury) 
+
+    glColor3f(0.5, 0.5, 0.5)
+    gluSphere(gluNewQuadric(), r, 10, 10)
+    glPopMatrix()
+
+def draw_plant(height, wave_offset):  
+    seg = 8
+    seg_height = height/seg
+
+    for i in range(seg):
+        glPushMatrix()
+        wave_amount = (i / seg) * 10
+        x_offset = math.sin(wave_offset + i * 0.5) * wave_amount
+        glTranslatef(x_offset, 0, i * seg_height)
+        green_intensity = 0.2 + (i /seg) * 0.4
+        glColor3f(0.0, green_intensity, 0.1)
+        gluCylinder(gluNewQuadric(), 2 - (i * 0.2), 1.5 - (i * 0.2), seg_height, 6, 1)
+        glPopMatrix()
+
+def draw_plant_at(x, y, z, scale, height, extra_offset):  
+    glPushMatrix()
+    glTranslatef(x, y, z)        
+    glScalef(scale, scale, scale)
+    draw_plant(height, plant_wave_offset + extra_offset)
+    glPopMatrix()
+
+def draw_fullscreen_red_blink():  
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    gluOrtho2D(0, 1000, 0, 800)
+
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    glColor3f(1.0, 0.0, 0.0)  
+    glBegin(GL_QUADS)
+    glVertex2f(0, 0)
+    glVertex2f(1000, 0)
+    glVertex2f(1000, 800)
+    glVertex2f(0, 800)
+    glEnd()
+
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    
+
 def draw_wave(var, direction):
     if wave==True:
         glPushMatrix()
@@ -99,8 +260,62 @@ def draw_wave(var, direction):
         gluCylinder(gluNewQuadric(), 30,30, 1500, 10, 10)  
         glPopMatrix()
 
+def spawn_environment():  
+    global stones, plants, small_fishes, big_fishes
+    stones = []
+    for i in range(30):  
+        sx = random.randint(min_of_x + 60, max_of_x - 60)
+        sy = random.randint(min_of_y + 60, max_of_y - 60)
+        sc = random.uniform(0.7, 1.8)
+        stones.append((sx, sy, 0, sc))
+
+    plants = []
+    for i in range(22):
+        px = random.randint(min_of_x + 80, max_of_x - 80)
+        py = random.randint(min_of_y + 80, max_of_y - 80)
+        ps = random.uniform(0.7, 1.4)
+        ph = random.uniform(0.0, 6.28)
+        h = random.uniform(40, 80) 
+        plants.append({"x": px, "y": py, "z": 0, "scale": ps, "wave": ph, "h": h})
+
+    small_fishes = []
+    for i in range(10):
+        fx = random.randint(min_of_x + 80, max_of_x - 80)
+        fy = random.randint(min_of_y + 80, max_of_y - 80)
+        fa = random.randint(0, 359)
+        fs = random.uniform(1.2, 2.2)
+        small_fishes.append({"x": fx, "y": fy, "z": 35, "a": fa, "spd": fs})
+
+    big_fishes = []
+    for i in range(5):
+        fx = random.randint(min_of_x + 100, max_of_x - 100)
+        fy = random.randint(min_of_y + 100, max_of_y - 100)
+        fa = random.randint(0, 359)
+        fs = random.uniform(0.7, 1.3)
+        big_fishes.append({"x": fx, "y": fy, "z": 45, "a": fa, "spd": fs})
+
+def update_fish_list(flist): 
+    for f in flist:
+        ang = math.radians(f["a"])
+        dx = f["spd"] * math.sin(ang)
+        dy = -f["spd"] * math.cos(ang)
+        f["x"] += dx
+        f["y"] += dy
+
+        if f["x"] < min_of_x + 40 or f["x"] > max_of_x - 40 or f["y"] < min_of_y + 40 or f["y"] > max_of_y - 40:
+            f["a"] = (f["a"] + 180 + random.randint(-30, 30)) % 360
+            f["x"] = min(max(f["x"], min_of_x + 50), max_of_x - 50)
+            f["y"] = min(max(f["y"], min_of_y + 50), max_of_y - 50)
+
+def update_environment():  
+    global plant_wave_offset
+    plant_wave_offset += 0.03  
+    update_fish_list(small_fishes)
+    update_fish_list(big_fishes)
+
 def keyboardListener(key, x, y):
-    global player_pos, player_angle,health, pov, exp,camera_pos
+    global player_pos, player_angle,health, pov, exp,camera_pos, hunger_counter, slow_mode, blink_counter, blink_on
+    
     """
     Handles keyboard inputs for player movement, gun rotation, camera updates, and cheat mode toggles.
     """
@@ -109,6 +324,10 @@ def keyboardListener(key, x, y):
     angle= math.radians(theta)
     x2=5*math.sin(angle)
     y2=-5*math.cos(angle)
+
+    if slow_mode:  
+        x2 *= MOVE_SLOW_FACTOR  
+        y2 *= MOVE_SLOW_FACTOR  
     # Move forward (W key)
     if (key == b'w' or key == b'W') and health>0:
         if GRID_LENGTH*(6)>=y1+y2>=GRID_LENGTH*(-7) and GRID_LENGTH*(7)>=x1+x2>=GRID_LENGTH*(-6):
@@ -137,7 +356,12 @@ def keyboardListener(key, x, y):
         exp=20
         pov=False
         camera_pos=(0,300,100)
-        
+        hunger_counter = 0      
+        slow_mode = False       
+        blink_on = False       
+        blink_counter = 0     
+        spawn_environment()     
+
 def specialKeyListener(key, x, y):
     """
     Handles special key inputs (arrow keys) for adjusting the camera angle and height.
@@ -235,21 +459,34 @@ def idle():
     Idle function that runs continuously:
     - Triggers screen redraw for real-time updates.
     """
-    global player_pos, health, player_angle,exp,pov, food,counter, wave_from, wave,var,wave_colli, bait_caught, caught_counter,escape_check, escape_chance
+    global player_pos, health, player_angle,exp,pov, food,counter, wave_from, wave,var,wave_colli, bait_caught, caught_counter,escape_check, escape_chance ,hunger_counter, slow_mode, blink_counter, blink_on 
     if exp<1:
         health=0
     if health<1:
         exp=0
-        
+    hunger_counter += 1  
     #health and exp logic
     """With each food intake health increases by 20. If health value exceeds 100 the rest goes to the exp"""
     if food==True:
+        hunger_counter = 0 
         if health+20<=100:
             health+=20
         else:
             exp+=(health+20-100)
             health=100
         food=False
+        
+    if hunger_counter >= HUNGER_LIMIT:
+        slow_mode = True
+        blink_counter = (blink_counter + 1) % (2 * BLINK_PERIOD_FRAMES)
+        blink_on = blink_counter < BLINK_PERIOD_FRAMES
+    else:
+        slow_mode = False
+        blink_on = False
+        blink_counter = 0
+
+    update_environment()  
+    
     #wave logic===========================================================
     if wave==False:
         counter+=0.5
@@ -357,6 +594,20 @@ def showScreen():
         startx=GRID_LENGTH*(-6)
         starty+=GRID_LENGTH
     glEnd()
+    
+    draw_borders(125)
+    
+    for sx, sy, sz, sc in stones:
+        draw_stone(sx, sy, sz, sc)
+
+    for p in plants:
+        draw_plant_at(p["x"], p["y"], p["z"], p["scale"], p["h"], p["wave"])  
+
+    for f in small_fishes:
+        draw_small_fish(f["x"], f["y"], f["z"], f["a"])
+    for f in big_fishes:
+        draw_big_fish(f["x"], f["y"], f["z"], f["a"])
+
     # Display game info text at a fixed screen position
     if health==0 or exp==0:
         draw_text(10, 770, "Game is Over.")
@@ -364,6 +615,10 @@ def showScreen():
     else:    
         draw_text(10, 770, f"Health: {health}")
         draw_text(10, 740, f"Exp: {exp}")
+        
+        if slow_mode:
+            draw_text(10, 710, "HUNGRY! Find food fast!")
+            
     x,y,z=player_pos
     #bullet
     # for i in bullet:
@@ -386,6 +641,8 @@ def main():
     glutInitWindowPosition(0, 0)  # Window position
     wind = glutCreateWindow(b"Ocean Hunger")  # Create the window
 
+    spawn_environment() 
+    
     glutDisplayFunc(showScreen)  # Register display function
     glutKeyboardFunc(keyboardListener)  # Register keyboard listener
     glutSpecialFunc(specialKeyListener)
@@ -505,5 +762,6 @@ if __name__ == "__main__":
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 125)
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 0)
     # glEnd()
+
 
 
