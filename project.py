@@ -185,7 +185,7 @@ def draw_small_fish(x,y,z,angle):
     draw_npc_fish(x, y, z, angle, size=0.55, color=(0.2, 1.0, 0.6))
 
 def draw_big_fish(x,y,z,angle):
-    draw_npc_fish(x, y, z, angle, size=1.25, body_rgb=(0.7, 0.2, 1.0)) 
+    draw_npc_fish(x, y, z, angle, size=1.25, color=(0.7, 0.2, 1.0)) 
 
 def draw_stone(x,y,z=0,scale=1.0,sink=0.35):  
     glPushMatrix()
@@ -376,27 +376,27 @@ def specialKeyListener(key, x, y):
     if key == GLUT_KEY_DOWN:
         if z-10>50:
             z-=10
-    # moving camera left (LEFT arrow key)
-    if key == GLUT_KEY_LEFT:
-        if x<300 and y==300:
-            x+=20
-        elif x==300 and y>-300:
-            y-=20
-        elif x>-300 and y==-300:
-            x-=20
-        elif x==-300 and y<300:
-            y+=20
+    # # moving camera left (LEFT arrow key)
+    # if key == GLUT_KEY_LEFT:
+    #     if x<300 and y==300:
+    #         x+=20
+    #     elif x==300 and y>-300:
+    #         y-=20
+    #     elif x>-300 and y==-300:
+    #         x-=20
+    #     elif x==-300 and y<300:
+    #         y+=20
 
-    # moving camera right (RIGHT arrow key)
-    if key == GLUT_KEY_RIGHT:
-        if x>-300 and y==300:
-            x-=20
-        elif x==-300 and y>-300:
-            y-=20
-        elif x<300 and y==-300:
-            x+=20
-        elif x==300 and y<300:
-            y+=20
+    # # moving camera right (RIGHT arrow key)
+    # if key == GLUT_KEY_RIGHT:
+    #     if x>-300 and y==300:
+    #         x-=20
+    #     elif x==-300 and y>-300:
+    #         y-=20
+    #     elif x<300 and y==-300:
+    #         x+=20
+    #     elif x==300 and y<300:
+    #         y+=20
     camera_pos = (x, y, z)
 
 
@@ -762,6 +762,7 @@ if __name__ == "__main__":
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 125)
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 0)
     # glEnd()
+
 
 
 
