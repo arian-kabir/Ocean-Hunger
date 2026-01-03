@@ -627,6 +627,10 @@ def showScreen():
     #     draw_enemy(li1)
 
     draw_player(x,y,z)
+
+    if blink_on and health > 0 and exp > 0:
+        draw_fullscreen_red_blink()
+
     if wave:
         draw_wave(var, wave_from)
     # Swap buffers for smooth rendering (double buffering)
@@ -762,6 +766,7 @@ if __name__ == "__main__":
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 125)
     # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 0)
     # glEnd()
+
 
 
 
