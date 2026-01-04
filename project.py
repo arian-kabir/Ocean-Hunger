@@ -22,7 +22,7 @@ bait_caught=False
 caught_counter=0
 escape_chance=0
 escape_check=False
-
+rear= False
 
 min_of_x = GRID_LENGTH * (-6)  
 max_of_x = GRID_LENGTH * (7)   
@@ -314,7 +314,7 @@ def update_environment():
     update_fish_list(big_fishes)
 
 def keyboardListener(key, x, y):
-    global player_pos, player_angle,health, pov, exp,camera_pos, hunger_counter, slow_mode, blink_counter, blink_on
+    global player_pos, player_angle,health, pov, exp,camera_pos, hunger_counter, slow_mode, blink_counter, blink_on, rear
     
     """
     Handles keyboard inputs for player movement, gun rotation, camera updates, and cheat mode toggles.
@@ -322,8 +322,8 @@ def keyboardListener(key, x, y):
     x1,y1,z1= player_pos
     theta=player_angle
     angle= math.radians(theta)
-    x2=5*math.sin(angle)
-    y2=-5*math.cos(angle)
+    x2=10*math.sin(angle)
+    y2=-10*math.cos(angle)
 
     if slow_mode:  
         x2 *= MOVE_SLOW_FACTOR  
@@ -340,18 +340,23 @@ def keyboardListener(key, x, y):
             y1-=y2
             x1-=x2
     # Rotate gun left (A key)
-    if (key == b'a') and health>0:
+    if (key == b'a' or key==b'A') and health>0:
         if x1+72<GRID_LENGTH*(7):
             theta+=2
     # Rotate gun right (D key)
-    if (key == b'd') and health>0:
+    if (key == b'd' or key==b'D') and health>0:
         if x1-72>GRID_LENGTH*(-6):
             theta-=2
     player_angle=theta
     player_pos=(x1,y1,z1)
-        
+    #rear view
+    if (key == b' ' or key==b' ') and health>0:
+        if rear==True:
+            rear= False
+        else:
+            rear=True
     # Reset the game if R key is pressed
-    if key == b'r':
+    if key == b'r' or key==b'R':
         health=100
         exp=20
         pov=False
@@ -376,27 +381,6 @@ def specialKeyListener(key, x, y):
     if key == GLUT_KEY_DOWN:
         if z-10>50:
             z-=10
-    # # moving camera left (LEFT arrow key)
-    # if key == GLUT_KEY_LEFT:
-    #     if x<300 and y==300:
-    #         x+=20
-    #     elif x==300 and y>-300:
-    #         y-=20
-    #     elif x>-300 and y==-300:
-    #         x-=20
-    #     elif x==-300 and y<300:
-    #         y+=20
-
-    # # moving camera right (RIGHT arrow key)
-    # if key == GLUT_KEY_RIGHT:
-    #     if x>-300 and y==300:
-    #         x-=20
-    #     elif x==-300 and y>-300:
-    #         y-=20
-    #     elif x<300 and y==-300:
-    #         x+=20
-    #     elif x==300 and y<300:
-    #         y+=20
     camera_pos = (x, y, z)
 
 
@@ -421,7 +405,7 @@ def setupCamera():
     Configures the camera's projection and view settings.
     Uses a perspective projection and positions the camera to look at the target.
     """
-    global pov, player_pos, player_angle
+    global pov, player_pos, player_angle,rear
     glMatrixMode(GL_PROJECTION)  # Switch to projection matrix mode
     glLoadIdentity()  # Reset the projection matrix
     # Set up a perspective projection (field of view, aspect ratio, near clip, far clip)
@@ -445,11 +429,15 @@ def setupCamera():
     yc = y1 + 100 * math.cos(angle)
     
     # Position the camera and set its orientation 
-    if pov==False:
-        gluLookAt(xc, yc, z,  # Camera position
-                x1,y1,z1,  # Look-at target
-                0, 0, 1)  # Up vector (z-axis)
-    else:
+    if pov==False and rear==False:
+        gluLookAt(xc, yc, z,
+                x1,y1,z1, 
+                0, 0, 1)  
+    elif pov==False and rear ==True:
+        gluLookAt(x1,y1,z, 
+                xc, yc, z1,
+                0, 0, 1)  
+    elif pov==True:
         gluLookAt(x1, y1, z1+80, 
         x2,y2,z2,  # Look-at target
         0, 0, 1)  
@@ -620,11 +608,6 @@ def showScreen():
             draw_text(10, 710, "HUNGRY! Find food fast!")
             
     x,y,z=player_pos
-    #bullet
-    # for i in bullet:
-    #     draw_bullet(i[0],i[1], i[2])
-    # if health>0 or missed<10:
-    #     draw_enemy(li1)
 
     draw_player(x,y,z)
 
@@ -658,114 +641,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-    
-    
-    #====================================================================================================
-    #     bullet=[]
-    # if radius >= 50:
-    #     decrease = True
-    # elif radius <= 25:
-    #     decrease = False
 
-    # if decrease:
-    #     radius -= 0.05
-    # else:
-    #     radius += 0.05
-    #enemy movement===================================================
-    # x1,y1,z1=player_pos
-    # for k in range(5):
-    #     if health>0 or missed>=10:
-    #         i,j= li1[k][0], li1[k][1]
-    #         if i<x1:
-    #             i+=enemyspeed
-    #         elif i>x1:
-    #             i-=enemyspeed
-    #         if j<y1:
-    #             j+=enemyspeed
-    #         elif j>y1:
-    #             j-=enemyspeed
-    #         if abs(i-x1)<40 and abs(j-y1)<40:
-    #             health-=1
-    #             print("Remaining Player health:", health)
-    #             i=random.randint(GRID_LENGTH*(-6)+25,GRID_LENGTH*(7)-25)
-    #             j=random.randint(GRID_LENGTH*(-7)+25,GRID_LENGTH*(6)-25)
-            
-    #         li1[k][0], li1[k][1]=i,j
-    #bullet================================================================
-#     new_bullets = []
-#     for i in bullet:
-#         xb, yb, zb, bangle = i
-#         angle = math.radians(bangle)
-#         xb +=2 * math.sin(angle)
-#         yb -=2 * math.cos(angle)
-#         hit=False
-#         for i in range(len(li1)):
-#             diff= math.sqrt((xb - li1[i][0])**2 + (yb - li1[i][1])**2)
-#             ang= math.degrees(math.atan2((li1[i][0]-x1),-(li1[i][1]-y1)))
-#             if diff <= radius+8:
-#                 exp += 1
-#                 li1[i][0] = random.randint(GRID_LENGTH*(-6)+25, GRID_LENGTH*(7)-25)
-#                 li1[i][1] = random.randint(GRID_LENGTH*(-7)+25, GRID_LENGTH*(6)-25)
-#                 hit=True
-#                 fired[i]=False
-#                 continue
-
-#         if hit==False:
-#             if GRID_LENGTH*(-6) <= xb <= GRID_LENGTH*(7) and GRID_LENGTH*(-7) <= yb <= GRID_LENGTH*(6):
-#                 new_bullets.append([xb, yb, zb, bangle])
-#             else:
-#                 missed+=1
-#                 if missed>=10:
-#                     health=0
-#                     cheat=pov=auto=False
-#                 else:    
-#                     print("Missed Bullet:", missed)
-        
-#     bullet = new_bullets         
-# #cheat===================================================================================
-#     if cheat==True:
-#         if cooldown==0:
-#             player_angle+=2
-#         if player_angle>360:
-#             player_angle-=360
-#         xc,yc,zc=player_pos
-#         if cooldown > 0:
-#             cooldown -= 1
-
-
-#         for i in range(len(li1)):
-#             ang= math.degrees(math.atan2((li1[i][0]-xc),-(li1[i][1]-yc)))
-#             if fired[i]==True:
-#                 continue
-#             if ang<0:
-#                 ang+=360
-#             if abs(player_angle-ang)<2 and cooldown==0:
-#                 bullet.append([xc,yc,125, player_angle])
-#                 cooldown=15
-#                 fired[i]=True
-#                 break
-#borders
-# glColor3f(0, 0, 1)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(-7), 0)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(-7), 125)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(-7), 125)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(-7), 0)
-    # glColor3f(130/255, 200/255, 229/255)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(6), 0)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(6), 125)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 125)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 0)
-    # glColor3f(0, 1, 0)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(-7), 0)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(-7), 125)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(6), 125)
-    # glVertex3f(GRID_LENGTH*(-6), GRID_LENGTH*(6), 0)
-    # glColor3f(68/255, 212/255, 59/255)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(-7), 0)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(-7), 125)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 125)
-    # glVertex3f(GRID_LENGTH*(7), GRID_LENGTH*(6), 0)
-    # glEnd()
 
 
 
