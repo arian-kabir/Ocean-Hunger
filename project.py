@@ -23,6 +23,7 @@ caught_counter=0
 escape_chance=0
 escape_check=False
 rear= False
+hpdecrease=0
 
 min_of_x = GRID_LENGTH * (-6)  
 max_of_x = GRID_LENGTH * (7)   
@@ -364,7 +365,8 @@ def keyboardListener(key, x, y):
         hunger_counter = 0      
         slow_mode = False       
         blink_on = False       
-        blink_counter = 0     
+        blink_counter = 0 
+        rear=False    
         spawn_environment()     
 
 def specialKeyListener(key, x, y):
@@ -447,7 +449,7 @@ def idle():
     Idle function that runs continuously:
     - Triggers screen redraw for real-time updates.
     """
-    global player_pos, health, player_angle,exp,pov, food,counter, wave_from, wave,var,wave_colli, bait_caught, caught_counter,escape_check, escape_chance ,hunger_counter, slow_mode, blink_counter, blink_on 
+    global player_pos, health, player_angle,exp,pov, food,counter, wave_from, wave,var,wave_colli, bait_caught, caught_counter,escape_check, escape_chance ,hunger_counter, slow_mode, blink_counter, blink_on, hpdecrease
     if exp<1:
         health=0
     if health<1:
@@ -465,6 +467,10 @@ def idle():
         food=False
         
     if hunger_counter >= HUNGER_LIMIT:
+        hpdecrease+=1
+        if hpdecrease>200:
+            hpdecrease=0
+            health-=5
         slow_mode = True
         blink_counter = (blink_counter + 1) % (2 * BLINK_PERIOD_FRAMES)
         blink_on = blink_counter < BLINK_PERIOD_FRAMES
@@ -472,6 +478,7 @@ def idle():
         slow_mode = False
         blink_on = False
         blink_counter = 0
+        hpdecrease=0
 
     update_environment()  
     
@@ -640,7 +647,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 
